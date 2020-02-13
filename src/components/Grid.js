@@ -45,7 +45,7 @@ const Grid = () => {
     );
     const isCeiling = isFrozen && active.shape.some(r => r.row === 1);
     if (isCeiling) {
-      setSpeed(999999999);
+      setSpeed(null);
     }
     return isFloor || isFrozen;
   };

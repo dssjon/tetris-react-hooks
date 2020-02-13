@@ -14,8 +14,10 @@ const IntervalHook = (callback, delay) => {
       savedCallback.current();
     }
 
-    let id = setInterval(tick, delay);
-    return () => clearInterval(id);
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
   }, [delay]);
 };
 

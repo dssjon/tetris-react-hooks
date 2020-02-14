@@ -16,6 +16,7 @@ const Grid = () => {
   const rows = 20;
   const default_speed = 1000;
   const drop_speed = 5;
+  const default_color = "#282c34";
   const randomShape = () => {
     const tetrominos = Tetrominos();
     return tetrominos[Math.floor(Math.random() * tetrominos.length)];
@@ -23,17 +24,17 @@ const Grid = () => {
   const [grid, setGrid] = useState([]);
   const [current, setCurrent] = useState(randomShape());
   const [frozen, setFrozen] = useState([]);
-  const [speed, setSpeed] = useState(default_speed);
+  const [currentSpeed, setSpeed] = useState(default_speed);
   const [dropInProgress, setDropInProgress] = useState(false);
-  const [preDropSpeed, setPreDropSpeed] = useState(default_speed)
+  const [preDropSpeed, setPreDropSpeed] = useState(default_speed);
 
   IntervalHook(() => {
     updateGame();
-  }, speed);
+  }, currentSpeed);
 
   IntervalHook(() => {
-    if (speed > 100) {
-      setSpeed(speed / 1.1);
+    if (currentSpeed > 100) {
+      setSpeed(currentSpeed / 1.1);
     }
   }, default_speed);
 
@@ -53,23 +54,35 @@ const Grid = () => {
     );
     if (isActive) return current.color;
     if (isFrozen.length > 0) return isFrozen[0].color;
-    return "#282c34";
+    return default_color;
   };
 
-  const Collided = (row, col) => {
-    const floor = current.shape.some(r => r.row === rows - 1);
-    const adjacent = frozen.some(f =>
+  const endGame = () => {
+    setSpeed(null);
+  };
+
+  const Colliding = (row, col) => {
+    if (isAdjacent(row, col) && isCeiling()) {
+      endGame();
+    }
+    return isFloor() || isAdjacent(row, col);
+  };
+
+  const isCeiling = () => {
+    return current.shape.some(r => r.row === 1);
+  };
+
+  const isAdjacent = (row, col) => {
+    return frozen.some(f =>
       f.shape.some(s => (s.row === row) & (s.col === col))
     );
-    const ceiling = adjacent && current.shape.some(r => r.row === 1);
-    if (ceiling) {
-      setSpeed(null);
-    }
-    return floor || adjacent;
+  };
+  const isFloor = () => {
+    return current.shape.some(r => r.row === rows - 1);
   };
 
-  const Collision = () => {
-    return current.shape.some(s => Collided(s.row + 1, s.col));
+  const Collided = () => {
+    return current.shape.some(s => Colliding(s.row + 1, s.col));
   };
 
   const updateCurrentShape = () => {
@@ -79,13 +92,28 @@ const Grid = () => {
   };
 
   const getNextShape = () => {
-    if (Collision()) {
+    if (Collided()) {
       setFrozen([...frozen, current]);
+      clearLines();
       resetSpeed();
       return randomShape();
     } else {
       return clone(current);
     }
+  };
+  const clearLines = () => {
+    grid.map(row => {
+      if (row.every(cell => cell.color !== default_color)) {
+        console.log("row cleared", row);
+        const updated = frozen.map(t => t.shape.filter(s => s.row !== row))
+        console.log(updated)
+        setFrozen(updated)
+      }
+    });
+  };
+
+  const dropRows = row => {
+    row.map(cell => (cell.color = "gold"));
   };
 
   const updateGame = () => {
@@ -158,7 +186,7 @@ const Grid = () => {
 
   const dropShapeFast = () => {
     setDropInProgress(true);
-    setPreDropSpeed(speed)
+    setPreDropSpeed(currentSpeed);
     setSpeed(drop_speed);
   };
 
@@ -175,7 +203,7 @@ const Grid = () => {
           rotate();
           break;
         case esc_key:
-          setSpeed(null);
+          endGame();
           break;
         case enter_key:
           //setGameSpeed(currentSpeed);

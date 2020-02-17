@@ -42,7 +42,7 @@ const Grid = () => {
     if (isEdge(dir)) {
       return;
     }
-    const updated = clone(current);
+     const updated = clone(current);
     updated.shape.map(s => (s.col += dir));
     setCurrent(updated);
   };
@@ -61,7 +61,7 @@ const Grid = () => {
     setSpeed(null);
   };
 
-  const Colliding = (row, col) => {
+  const colliding = (row, col) => {
     if (isAdjacent(row, col) && isCeiling()) {
       endGame();
     }
@@ -81,8 +81,8 @@ const Grid = () => {
     return current.shape.some(r => r.row === rows - 1);
   };
 
-  const Collided = () => {
-    return current.shape.some(s => Colliding(s.row + 1, s.col));
+  const collided = () => {
+    return current.shape.some(s => colliding(s.row + 1, s.col));
   };
 
   const updateCurrentShape = () => {
@@ -92,7 +92,7 @@ const Grid = () => {
   };
 
   const getNextShape = () => {
-    if (Collided()) {
+    if (collided()) {
       setFrozen([...frozen, current]);
       clearLines();
       resetSpeed();
@@ -102,14 +102,21 @@ const Grid = () => {
     }
   };
   const clearLines = () => {
-    grid.map(row => {
+    grid.map((row, idx) => {
       if (row.every(cell => cell.color !== default_color)) {
-        console.log("row cleared", row);
-        const updated = frozen.map(t => t.shape.filter(s => s.row !== row))
-        console.log(updated)
-        setFrozen(updated)
+        // TODO: Find out the proper way to do this!
+        const cloned = clone(frozen)
+        cloned.map(f => f.shape = filterArrayOfObjects(f.shape, idx))
+        cloned.map(f => f.shape.map(s => s.row += 1 ))
+        setFrozen(cloned);
+        //dropRows(row)
       }
     });
+  };
+
+  const filterArrayOfObjects = (arr, val) => {
+    const result = arr.filter(o => o.row !== val);
+    return [result[0]];
   };
 
   const dropRows = row => {

@@ -44,8 +44,7 @@ const Tetrominos = () => {
       { row: 1, col: 3 }
     ]
   };
-  //return [I, T, O, S, Z];
-  return [T];
+  return [I, T, O, S, Z];
 };
 
 export default Tetrominos;

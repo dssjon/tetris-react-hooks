@@ -26,9 +26,7 @@ const Grid = () => {
 
   IntervalHook(() => {
     if (currentSpeed > 100) {
-      // TODO: Uncomment after debug
-      //setSpeed(currentSpeed / 1.05)
-      setSpeed(currentSpeed)
+      setSpeed(currentSpeed / 1.05)
     }
   }, Default.speed)
 
@@ -103,7 +101,7 @@ const Grid = () => {
         cloned.map((f) => (f.shape = filterArrayOfObjects(f.shape, idx)))
         cloned.map((f) => f.shape.map((s) => (s.row += 1)))
         setFrozen(cloned)
-        //dropRows(row)
+        dropRows(row)
       }
     })
   }
